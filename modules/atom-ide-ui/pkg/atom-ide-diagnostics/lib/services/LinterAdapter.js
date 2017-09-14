@@ -108,7 +108,7 @@ export function linterMessageV2ToDiagnosticMessage(
   // TODO: handle multiple solutions and priority.
   let fix;
   const {solutions} = msg;
-  if (solutions != null) {
+  if (solutions != null && solutions.length > 0) {
     const solution = solutions[0];
     if (solution.replaceWith !== undefined) {
       fix = {
