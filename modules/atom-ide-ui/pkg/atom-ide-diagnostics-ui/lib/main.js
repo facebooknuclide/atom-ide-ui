@@ -46,6 +46,7 @@ import {destroyItemWhere} from 'nuclide-commons-atom/destroyItemWhere';
 import {isValidTextEditor} from 'nuclide-commons-atom/text-editor';
 import {Observable} from 'rxjs';
 import showActionsMenu from './showActionsMenu';
+import showAtomLinterWarning from './showAtomLinterWarning';
 
 const MAX_OPEN_ALL_FILES = 20;
 const SHOW_TRACES_SETTING = 'atom-ide-diagnostics-ui.showDiagnosticTraces';
@@ -70,6 +71,7 @@ class Activation {
     this._subscriptions = new UniversalDisposable(
       this.registerOpenerAndCommand(),
       this._registerActionsMenu(),
+      showAtomLinterWarning(),
     );
     this._model = new Model({
       filterByActiveTextEditor:
