@@ -20,14 +20,14 @@
   },
   "atomConfig": {
     "statusBarPosition": {
-        "title": "Status Bar position",
-        "type": "string",
-        "default": "left",
-        "description": "",
-        "enum": [
-          "left",
-          "right"
-        ]
+      "title": "Status Bar position",
+      "type": "string",
+      "default": "left",
+      "description": "",
+      "enum": [
+        "left",
+        "right"
+      ]
     },
     "showDiagnosticTraces": {
       "title": "Show full diagnostic traces",
