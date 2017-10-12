@@ -24,6 +24,7 @@ import ReactDOM from 'react-dom';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 import analytics from 'nuclide-commons-atom/analytics';
 import {observableFromSubscribeFunction} from 'nuclide-commons/event';
+import featureConfig from 'nuclide-commons-atom/feature-config';
 
 type DiagnosticCount = {
   errorCount: number,
@@ -83,10 +84,16 @@ export default class StatusBarTile {
     item.className = 'inline-block';
     this._render();
 
-    const statusBarPosition = atom.config.get('atom-ide-ui.atom-ide-diagnostics-ui.statusBarPosition');
-    const statusBarPositionMethod = statusBarPosition === 'left' ? statusBar.addLeftTile : statusBar.addRightTile;
+    const statusBarPosition = featureConfig.get(
+      'atom-ide-diagnostics-ui.statusBarPosition',
+    );
+    const statusBarPositionMethod =
+      statusBarPosition === 'left'
+        ? statusBar.addLeftTile
+        : statusBar.addRightTile;
     // negate the priority for better visibility on the right side
-    const statusBarPriority = statusBarPosition === 'left' ? STATUS_BAR_PRIORITY : -STATUS_BAR_PRIORITY;
+    const statusBarPriority =
+      statusBarPosition === 'left' ? STATUS_BAR_PRIORITY : -STATUS_BAR_PRIORITY;
     this._tile = statusBarPositionMethod({
       item,
       priority: statusBarPriority,
