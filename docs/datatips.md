@@ -20,7 +20,7 @@ Consume the datatip [Atom service](http://flight-manual.atom.io/behind-atom/sect
 "consumedServices": {
   "datatip": {
     "versions": {
-      "0.1.0": "consumeDatatipService"
+      "0.1.0": "consumeDatatip"
     }
   }
 }
