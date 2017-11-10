@@ -29,7 +29,7 @@ Consume the datatip [Atom service](http://flight-manual.atom.io/behind-atom/sect
 Then, in your package entry point, add:
 
 ```
-export function consumeDatatipService(datatipService) {}
+export function consumeDatatip(datatipService) {}
 ```
 
 `datatipService` will be a `DatatipService` object
