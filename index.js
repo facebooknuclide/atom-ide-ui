@@ -72,7 +72,7 @@ if (
           pkg: JSON.parse(pkgJson),
         };
       } catch (err) {
-        if (err.code !== 'ENOENT') {
+        if (err.code !== 'ENOENT' && err.code !== 'ENOTDIR') {
           throw err;
         }
       }
