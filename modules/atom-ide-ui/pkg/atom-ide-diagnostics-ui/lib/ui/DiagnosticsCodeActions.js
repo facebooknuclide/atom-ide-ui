@@ -35,7 +35,18 @@ export default function DiagnosticsCodeActions(props: {
                 size="EXTRA_SMALL"
                 onClick={() => {
                   // TODO: (seansegal) T21130332 Display CodeAction status indicators
-                  codeAction.apply().catch(handleCodeActionFailure);
+                  codeAction
+                    .apply()
+                    .then(() => {
+                      const activeItem = atom.workspace.getActivePaneItem();
+                      if (
+                        activeItem &&
+                        activeItem.element instanceof window.HTMLElement
+                      ) {
+                        activeItem.element.focus();
+                      }
+                    })
+                    .catch(handleCodeActionFailure);
                 }}>
                 <span className="inline-block">{title}</span>
               </Button>

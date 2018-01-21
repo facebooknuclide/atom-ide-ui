@@ -76,6 +76,14 @@ function getCodeActions(
               },
               async apply() {
                 action.apply();
+
+                const activeItem = atom.workspace.getActivePaneItem();
+                if (
+                  activeItem &&
+                  activeItem.element instanceof window.HTMLElement
+                ) {
+                  activeItem.element.focus();
+                }
               },
               dispose() {},
             },
