@@ -37,6 +37,7 @@ export default function DiagnosticsCodeActions(props: {
                   // TODO: (seansegal) T21130332 Display CodeAction status indicators
                   codeAction
                     .apply()
+                    .catch(handleCodeActionFailure)
                     .then(() => {
                       const activeItem = atom.workspace.getActivePaneItem();
                       if (
@@ -45,8 +46,7 @@ export default function DiagnosticsCodeActions(props: {
                       ) {
                         activeItem.element.focus();
                       }
-                    })
-                    .catch(handleCodeActionFailure);
+                    });
                 }}>
                 <span className="inline-block">{title}</span>
               </Button>
