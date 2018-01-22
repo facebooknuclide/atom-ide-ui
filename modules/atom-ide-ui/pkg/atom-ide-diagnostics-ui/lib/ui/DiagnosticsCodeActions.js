@@ -12,6 +12,7 @@
 
 import type {CodeAction} from '../../../atom-ide-code-actions/lib/types';
 
+import {TextEditor} from 'atom';
 import * as React from 'react';
 import {Button} from 'nuclide-commons-ui/Button';
 import {ButtonGroup} from 'nuclide-commons-ui/ButtonGroup';
@@ -39,11 +40,9 @@ export default function DiagnosticsCodeActions(props: {
                     .apply()
                     .catch(handleCodeActionFailure)
                     .then(() => {
+                      // Return focus to the editor after clicking.
                       const activeItem = atom.workspace.getActivePaneItem();
-                      if (
-                        activeItem &&
-                        activeItem.element instanceof window.HTMLElement
-                      ) {
+                      if (activeItem && activeItem instanceof TextEditor) {
                         activeItem.element.focus();
                       }
                     });
