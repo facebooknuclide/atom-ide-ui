@@ -328,6 +328,7 @@ class OutlineViewCore extends React.PureComponent<
       return {
         type: 'LEAF',
         label: renderItem(outlineTree),
+        tooltipTitle: getTooltipTitle(outlineTree),
         hidden: searchResult && !searchResult.visible,
       };
     }
@@ -335,6 +336,7 @@ class OutlineViewCore extends React.PureComponent<
     return {
       type: 'NESTED',
       label: renderItem(outlineTree),
+      tooltipTitle: getTooltipTitle(outlineTree),
       children: outlineTree.children.map(this._outlineTreeToNode),
       hidden: searchResult && !searchResult.visible,
     };
@@ -452,6 +454,19 @@ function renderTextToken(
       )}
     </span>
   );
+}
+
+function getTooltipTitle(
+  outline: OutlineTreeForUi,
+): string {
+  if (outline.kind != null) {
+    return outline.kind;
+  } else if (outline.tokenizedText != null) {
+    return outline.tokenizedText.map((token, i) => token.kind).join();
+  } else if (outline.plainText != null) {
+    return outline.plainText;
+  }
+  return '';
 }
 
 function selectNodeFromPath(
