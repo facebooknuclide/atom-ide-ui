@@ -22,6 +22,7 @@ import shallowEqual from 'shallowequal';
 import nullthrows from 'nullthrows';
 import {scrollIntoView} from './scrollIntoView';
 import {TreeList} from './Tree';
+import addTooltip from './addTooltip';
 
 export type NodePath = Array<number>;
 export type TreeNode = TreeLeafNode | TreeNestedNode;
@@ -30,6 +31,7 @@ type TreeLeafNode = {|
   type: 'LEAF',
   label: React.Node,
   hidden?: boolean,
+  tooltipTitle?: string,
 |};
 
 type TreeNestedNode = {|
@@ -37,6 +39,7 @@ type TreeNestedNode = {|
   children: Array<TreeNode>,
   label: React.Node,
   hidden?: boolean,
+  tooltipTitle?: string,
 |};
 
 type TreeProps = {|
@@ -247,6 +250,7 @@ function AbstractTreeItem({
       // $FlowIgnore
       <TreeItem
         className={className}
+        tooltipTitle={node.tooltipTitle}
         isFocused={focusedPath && arrayEqual(focusedPath, path)}
         onConfirm={onConfirm}
         onSelect={onSelect}
@@ -263,6 +267,7 @@ function AbstractTreeItem({
     // $FlowIgnore
     <NestedTreeItem
       className={className}
+      tooltipTitle={node.tooltipTitle}
       collapsed={false}
       hasFlatChildren={hasFlatChildren}
       focusedPath={focusedPath}
@@ -301,6 +306,7 @@ function AbstractTreeItem({
 type TreeItemProps = {|
   children?: React.Node,
   className?: ?string,
+  tooltipTitle?: ?string,
   isFocused: boolean,
   onSelect: (path: NodePath) => mixed,
   onConfirm: (path: NodePath) => mixed,
@@ -337,10 +343,11 @@ class TreeItem extends React.Component<TreeItemProps> {
   }
 
   render() {
-    const {className, isFocused, path, selectedPaths, children} = this.props;
+    const {className, tooltipTitle, isFocused, path, selectedPaths, children} = this.props;
     const isSelected = selectedPaths.some(selectedPath =>
       shallowEqual(path, selectedPath),
     );
+    const tooltipRef = tooltipTitle != null ? addTooltip({title: tooltipTitle, placement: 'left'}) : null;
 
     return (
       <li
@@ -349,8 +356,9 @@ class TreeItem extends React.Component<TreeItemProps> {
         className={classnames('list-item', className, {
           selected: isSelected,
         })}
+        title={tooltipTitle}
         onClick={this._handleClick}
-        ref={liNode => (this._liNode = liNode)}
+        ref={liNode => (this._liNode = liNode), tooltipRef}
         role="treeitem">
         {isSelected && typeof children === 'string' ? (
           // String children must be wrapped to receive correct styles when selected.
@@ -367,6 +375,7 @@ type NestedTreeItemProps = {
   label?: React.Node,
   children?: React.Node,
   className?: ?string,
+  tooltipTitle?: ?string,
   hasFlatChildren?: boolean, // passthrough to inner TreeList
   focusedPath: NodePath,
   onSelect: (path: NodePath) => mixed,
@@ -439,6 +448,7 @@ class NestedTreeItem extends React.Component<NestedTreeItemProps> {
   render() {
     const {
       className,
+      tooltipTitle,
       hasFlatChildren,
       focusedPath,
       selectedPaths,
@@ -454,6 +464,7 @@ class NestedTreeItem extends React.Component<NestedTreeItemProps> {
     const isCollapsed = collapsedPaths.some(collapsedPath =>
       shallowEqual(path, collapsedPath),
     );
+    const tooltipRef = tooltipTitle != null ? addTooltip({title: tooltipTitle, placement: 'left'}) : null;
 
     return (
       <li
@@ -467,7 +478,7 @@ class NestedTreeItem extends React.Component<NestedTreeItemProps> {
         onClick={this._handleClick}
         role="treeitem">
         {label == null ? null : (
-          <div className="list-item" ref={node => (this._itemNode = node)}>
+          <div className="list-item" title={tooltipTitle} ref={node => (this._itemNode = node), tooltipRef}>
             {label}
           </div>
         )}
