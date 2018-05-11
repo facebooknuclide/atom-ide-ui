@@ -55,7 +55,6 @@ const featureLoader = new FeatureLoader({
 featureLoader.load();
 
 module.exports = {
-  config: featureLoader.getConfig(),
   activate() {
     disposables = new UniversalDisposable(
       require('nuclide-commons-ui'),
