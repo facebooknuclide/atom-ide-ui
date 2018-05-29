@@ -31,6 +31,8 @@ import type {
   DefinitionPreviewProvider,
 } from './types';
 
+import type {AbortSignal} from 'nuclide-commons/AbortController';
+
 import invariant from 'assert';
 import {getLogger} from 'log4js';
 import {Range} from 'atom';
@@ -79,11 +81,12 @@ class Activation {
   async _getDefinition(
     editor: atom$TextEditor,
     position: atom$Point,
+    options?: {signal: AbortSignal},
   ): Promise<?DefinitionQueryResult> {
     for (const provider of this._providers.getAllProvidersForEditor(editor)) {
       try {
         // eslint-disable-next-line no-await-in-loop
-        const result = await provider.getDefinition(editor, position);
+        const result = await provider.getDefinition(editor, position, options);
         if (result != null) {
           if (result.queryRange == null) {
             const match = wordAtPosition(editor, position, {
@@ -96,10 +99,17 @@ class Activation {
           return result;
         }
       } catch (err) {
+        // Abort errors should bubble up the stack.
+        if (err && err.name === 'AbortError') {
+          throw err;
+        }
         getLogger('atom-ide-definitions').error(
           `Error getting definition for ${String(editor.getPath())}`,
           err,
         );
+      }
+      if (options != null && options.signal.aborted) {
+        throw new DOMException('Aborted', 'AbortError');
       }
     }
     return null;
@@ -108,11 +118,14 @@ class Activation {
   async getSuggestion(
     editor: atom$TextEditor,
     position: atom$Point,
+    options?: {signal: AbortSignal},
   ): Promise<?HyperclickSuggestion> {
-    const result = await this._definitionCache.get(editor, position, () =>
-      this._getDefinition(editor, position),
+    const result = await this._definitionCache.get(
+      editor,
+      position,
+      options,
+      () => this._getDefinition(editor, position, options),
     );
-
     if (result == null) {
       return null;
     }
@@ -239,7 +252,8 @@ class Activation {
     return {
       priority: 20,
       providerName: 'atom-ide-definitions',
-      getSuggestion: (editor, position) => this.getSuggestion(editor, position),
+      getSuggestion: (editor, position, options) =>
+        this.getSuggestion(editor, position, options),
     };
   }
 }

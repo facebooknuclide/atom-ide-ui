@@ -49,6 +49,7 @@ module.exports = {
     atom: false,
     document: false,
     window: false,
+    DOMException: false,
   },
 
   rules: {

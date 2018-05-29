@@ -16,6 +16,7 @@ import type {HyperclickSuggestion} from './types';
 import type Hyperclick from './Hyperclick';
 
 import {Point} from 'atom';
+import {fromAbortablePromise} from 'nuclide-commons/observable';
 import featureConfig from 'nuclide-commons-atom/feature-config';
 import {wordAtPosition} from 'nuclide-commons-atom/range';
 import {isPositionInRange} from 'nuclide-commons/range';
@@ -301,8 +302,10 @@ export default class HyperclickForTextEditor {
         return Observable.using(
           () => this._showLoading(),
           () =>
-            Observable.defer(() =>
-              this._hyperclick.getSuggestion(this._textEditor, position),
+            fromAbortablePromise(signal =>
+              this._hyperclick.getSuggestion(this._textEditor, position, {
+                signal,
+              }),
             )
               .startWith(null) // Clear the previous suggestion immediately.
               .catch(e => {

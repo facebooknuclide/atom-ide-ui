@@ -10,6 +10,7 @@
  * @format
  */
 
+import type {AbortSignal} from 'nuclide-commons/AbortController';
 import type {DefinitionQueryResult} from './types';
 import {wordAtPosition} from 'nuclide-commons-atom/range';
 import {isPositionInRange} from 'nuclide-commons/range';
@@ -31,6 +32,7 @@ class DefinitionCache {
   async get(
     editor: atom$TextEditor,
     position: atom$Point,
+    options: ?{signal: AbortSignal},
     getImpl: () => Promise<?DefinitionQueryResult>,
   ): Promise<?DefinitionQueryResult> {
     // queryRange is often a list of one range
@@ -39,7 +41,17 @@ class DefinitionCache {
       this._cachedResultEditor === editor &&
       isPositionInRange(position, this._cachedResultRange)
     ) {
-      return this._cachedResultPromise;
+      try {
+        return await this._cachedResultPromise;
+      } catch (err) {
+        // If the cached promise was aborted, fall through.
+        if (err == null || err.name !== 'AbortError') {
+          throw err;
+        }
+      }
+    }
+    if (options && options.signal.aborted) {
+      throw new DOMException('Aborted', 'AbortError');
     }
 
     // invalidate whenever the buffer changes
@@ -54,6 +66,12 @@ class DefinitionCache {
       editor.getBuffer().onDidChangeText(invalidateAndStopListening),
       editor.onDidDestroy(invalidateAndStopListening),
     );
+    if (options != null) {
+      options.signal.addEventListener('abort', invalidateAndStopListening);
+      editorDisposables.add(() => {
+        options.signal.removeEventListener('abort', invalidateAndStopListening);
+      });
+    }
     this._disposables.add(editorDisposables);
 
     const wordGuess = wordAtPosition(editor, position);

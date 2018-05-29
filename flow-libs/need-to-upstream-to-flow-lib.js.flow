@@ -126,3 +126,9 @@ declare module 'module' {
 declare module 'console' {
   declare module.exports: any;
 }
+
+declare class DOMException {
+  constructor(message?: string, name?: string): void,
+  message: string,
+  name: string,
+}

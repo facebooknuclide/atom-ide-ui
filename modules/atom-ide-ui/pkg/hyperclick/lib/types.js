@@ -10,6 +10,8 @@
  * @format
  */
 
+import type {AbortSignal} from 'nuclide-commons/AbortController';
+
 export type HyperclickProvider = {
   // Use this to provide a suggestion for single-word matches.
   // Optionally set `wordRegExp` to adjust word-matching.
@@ -17,6 +19,7 @@ export type HyperclickProvider = {
     textEditor: atom$TextEditor,
     text: string,
     range: atom$Range,
+    options?: {signal: AbortSignal},
   ) => Promise<?HyperclickSuggestion>,
 
   wordRegExp?: RegExp,
@@ -26,6 +29,7 @@ export type HyperclickProvider = {
   getSuggestion?: (
     textEditor: atom$TextEditor,
     position: atom$Point,
+    options?: {signal: AbortSignal},
   ) => Promise<?HyperclickSuggestion>,
 
   // Must be unique. Used for analytics.

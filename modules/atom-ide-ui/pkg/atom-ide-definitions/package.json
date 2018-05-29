@@ -20,7 +20,8 @@
     },
     "definitions": {
       "versions": {
-        "0.1.0": "consumeDefinitionProvider"
+        "0.1.0": "consumeDefinitionProvider",
+        "1.0.0": "consumeDefinitionProvider"
       }
     },
     "definition-preview": {
@@ -32,7 +33,7 @@
   "providedServices": {
     "hyperclick": {
       "versions": {
-        "0.1.0": "getHyperclickProvider"
+        "1.0.0": "getHyperclickProvider"
       }
     }
   }

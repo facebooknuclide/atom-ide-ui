@@ -32,6 +32,8 @@ beforeEach(() => {
   });
 });
 
+const abortSignalMatcher = {isEqual: options => options && options.signal};
+
 describe('Hyperclick', () => {
   let textEditor: atom$TextEditor = (null: any);
   let textEditorView: atom$TextEditorElement = (null: any);
@@ -174,6 +176,7 @@ describe('Hyperclick', () => {
             textEditor,
             expectedText,
             expectedRange,
+            abortSignalMatcher,
           );
 
           dispatch(MouseEvent, 'mousedown', position, {metaKey: true});
@@ -205,6 +208,7 @@ describe('Hyperclick', () => {
             textEditor,
             expectedText,
             expectedRange,
+            abortSignalMatcher,
           );
 
           dispatch(MouseEvent, 'mousedown', position, {metaKey: true});
@@ -242,6 +246,7 @@ describe('Hyperclick', () => {
           expect(provider.getSuggestion).toHaveBeenCalledWith(
             textEditor,
             position,
+            abortSignalMatcher,
           );
 
           dispatch(MouseEvent, 'mousedown', position, {metaKey: true});
@@ -283,6 +288,7 @@ describe('Hyperclick', () => {
             textEditor,
             expectedText,
             expectedRange,
+            abortSignalMatcher,
           );
 
           dispatch(MouseEvent, 'mousedown', position, {metaKey: true});
@@ -324,6 +330,7 @@ describe('Hyperclick', () => {
             textEditor,
             expectedText,
             expectedRange,
+            abortSignalMatcher,
           );
 
           dispatch(MouseEvent, 'mousedown', position, {metaKey: true});
@@ -383,6 +390,7 @@ describe('Hyperclick', () => {
             textEditor,
             expectedText,
             expectedRange,
+            abortSignalMatcher,
           );
 
           dispatch(MouseEvent, 'mousemove', position.translate([0, 1]), {
@@ -418,6 +426,7 @@ describe('Hyperclick', () => {
             textEditor,
             expectedText1,
             expectedRange1,
+            abortSignalMatcher,
           );
 
           const position2 = new Point(0, 8);
@@ -429,6 +438,7 @@ describe('Hyperclick', () => {
             textEditor,
             expectedText2,
             expectedRange2,
+            abortSignalMatcher,
           );
 
           expect(provider.getSuggestionForWord.callCount).toBe(2);
@@ -462,6 +472,7 @@ describe('Hyperclick', () => {
           expect(provider.getSuggestion).toHaveBeenCalledWith(
             textEditor,
             position,
+            abortSignalMatcher,
           );
 
           dispatch(MouseEvent, 'mousemove', new Point(0, 4), {metaKey: true});
@@ -496,6 +507,7 @@ describe('Hyperclick', () => {
             textEditor,
             expectedText,
             expectedRange,
+            abortSignalMatcher,
           );
 
           dispatch(MouseEvent, 'mousemove', outOfRangePosition, {
@@ -599,6 +611,7 @@ describe('Hyperclick', () => {
             textEditor,
             'word2',
             Range.fromObject([[0, 6], [0, 11]]),
+            undefined,
           );
           waitsFor(() => callback.callCount === 1);
         });
@@ -858,6 +871,30 @@ describe('Hyperclick', () => {
           ).not.toExist();
         });
       });
+
+      it('cancels requests on key up', () => {
+        waitsForPromise(async () => {
+          const provider = {
+            providerName: 'test',
+            async getSuggestionForWord(sourceTextEditor, text, range) {
+              return new Promise(resolve => {});
+            },
+            priority: 0,
+          };
+          spyOn(provider, 'getSuggestionForWord').andCallThrough();
+          hyperclick.addProvider(provider);
+
+          const position = new Point(0, 1);
+          dispatch(MouseEvent, 'mousemove', position, {metaKey: true});
+
+          expect(provider.getSuggestionForWord).toHaveBeenCalled();
+          const options = provider.getSuggestionForWord.calls[0].args[3];
+          expect(options.signal.aborted).toBeFalsy();
+
+          dispatch(MouseEvent, 'mousemove', position);
+          expect(options.signal.aborted).toBeTruthy();
+        });
+      });
     });
   });
 
@@ -900,6 +937,7 @@ describe('Hyperclick', () => {
             textEditor,
             expectedText,
             expectedBufferRange,
+            abortSignalMatcher,
           );
           expect(provider.getSuggestionForWord.callCount).toBe(1);
         });

@@ -10,6 +10,7 @@
  * @format
  */
 
+import type {AbortSignal} from 'nuclide-commons/AbortController';
 import type {HyperclickSuggestion, HyperclickProvider} from './types';
 
 import HyperclickForTextEditor from './HyperclickForTextEditor';
@@ -80,6 +81,7 @@ export default class Hyperclick {
   async getSuggestion(
     textEditor: TextEditor,
     position: atom$Point,
+    options?: {signal: AbortSignal},
   ): Promise<?HyperclickSuggestion> {
     for (const provider of this._providers.getAllProvidersForEditor(
       textEditor,
@@ -87,7 +89,7 @@ export default class Hyperclick {
       let result;
       if (provider.getSuggestion) {
         // eslint-disable-next-line no-await-in-loop
-        result = await provider.getSuggestion(textEditor, position);
+        result = await provider.getSuggestion(textEditor, position, options);
       } else if (provider.getSuggestionForWord) {
         const match = wordAtPosition(textEditor, position, provider.wordRegExp);
         if (match == null) {
@@ -100,11 +102,15 @@ export default class Hyperclick {
           textEditor,
           wordMatch[0],
           range,
+          options,
         );
       } else {
         throw new Error(
           'Hyperclick must have either `getSuggestion` or `getSuggestionForWord`',
         );
+      }
+      if (options && options.signal.aborted) {
+        return null;
       }
       if (result != null) {
         return result;

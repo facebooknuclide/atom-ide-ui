@@ -216,7 +216,8 @@
     },
     "hyperclick": {
       "versions": {
-        "0.1.0": "addProvider"
+        "0.1.0": "addProvider",
+        "1.0.0": "addProvider"
       }
     }
   },

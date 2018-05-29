@@ -18,6 +18,7 @@ import type {DefinitionProvider} from '../lib/types';
 
 import {Point, Range, TextEditor} from 'atom';
 import invariant from 'assert';
+import AbortController from 'nuclide-commons/AbortController';
 import UniversalDisposable from 'nuclide-commons/UniversalDisposable';
 
 describe('DefinitionHyperclick', () => {
@@ -48,7 +49,7 @@ describe('DefinitionHyperclick', () => {
         '0.1.0',
         definitionProvider,
       ),
-      atom.packages.serviceHub.consume('hyperclick', '0.1.0', x => {
+      atom.packages.serviceHub.consume('hyperclick', '1.0.0', x => {
         provider = x;
       }),
     );
@@ -76,7 +77,7 @@ describe('DefinitionHyperclick', () => {
       const result = await provider.getSuggestion(editor, position);
 
       expect(result).toBe(null);
-      expect(spy).toHaveBeenCalledWith(editor, position);
+      expect(spy).toHaveBeenCalledWith(editor, position, undefined);
     });
   });
 
@@ -105,7 +106,7 @@ describe('DefinitionHyperclick', () => {
 
       invariant(result != null);
       expect(result.range).toEqual(definition.queryRange);
-      expect(spy).toHaveBeenCalledWith(editor, position);
+      expect(spy).toHaveBeenCalledWith(editor, position, undefined);
       expect(goToLocation).not.toHaveBeenCalled();
 
       invariant(result != null);
@@ -159,7 +160,7 @@ describe('DefinitionHyperclick', () => {
 
       invariant(result != null);
       expect(result.range).toEqual(defs.queryRange);
-      expect(spy).toHaveBeenCalledWith(editor, position);
+      expect(spy).toHaveBeenCalledWith(editor, position, undefined);
       expect(goToLocation).not.toHaveBeenCalled();
       const callbacks: Array<{
         title: string,
@@ -179,6 +180,31 @@ describe('DefinitionHyperclick', () => {
         line: 3,
         column: 4,
       });
+    });
+  });
+
+  it('is able to cancel definition requests', () => {
+    waitsForPromise(async () => {
+      const spy = spyOn(definitionProvider, 'getDefinition').andCallFake(
+        (_editor, _position, options) =>
+          new Promise((resolve, reject) => {
+            options.signal.onabort = () =>
+              reject(new DOMException('Aborted', 'AbortError'));
+          }),
+      );
+
+      invariant(provider != null);
+      invariant(provider.getSuggestion != null);
+      const controller = new AbortController();
+      const options = {signal: controller.signal};
+      const suggestionPromise = provider
+        .getSuggestion(editor, position, options)
+        .catch(err => err);
+
+      expect(spy).toHaveBeenCalledWith(editor, position, options);
+      controller.abort();
+      const result = await suggestionPromise;
+      expect(result.name).toEqual('AbortError');
     });
   });
 
