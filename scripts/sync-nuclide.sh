@@ -7,6 +7,7 @@ SYNC_PATHS=(
   'flow-libs'
   'flow-typed'
   'modules'
+  'jest'
   ':!modules/big-dig*'
   ':!modules/nuclide-debugger-cli'
   ':!modules/nuclide-debugger-vsps'
